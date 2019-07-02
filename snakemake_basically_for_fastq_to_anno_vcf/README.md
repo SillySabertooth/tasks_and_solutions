@@ -1,3 +1,8 @@
+Snakemake has an amazing tutorial. Use the Snakemake is one of the most attractive ways to write pipelines.
+https://snakemake.readthedocs.io/en/stable/
+
+###################################################
+
 in vim - syntax
 :set syntax=snakemake
 
