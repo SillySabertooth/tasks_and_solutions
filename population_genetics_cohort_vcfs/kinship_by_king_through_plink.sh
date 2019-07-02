@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #this commands are from Vasili Pankratov vasilipankratov@gmail.com 
-#but i make a loop
+#but i made a loop
 
 name=real_brothers
 final=bros
