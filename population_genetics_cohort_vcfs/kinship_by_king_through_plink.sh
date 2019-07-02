@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#this commands are from Vasili Pankratov vasilipankratov@gmail.com 
+#but i make a loops
+
 name=real_brothers
 final=bros
 
