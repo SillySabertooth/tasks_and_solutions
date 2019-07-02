@@ -1,0 +1,114 @@
+#rule count_intersected:
+#    input: frgatk = "output/{id}.freegatk.vcf", frsmt = "output/{id}.frsmt.vcf", gatksmt = "output/{id}.gatksmt.vcf", rep = "output/{id}" 
+#    output: "output/reports/{id}"
+#    shell: "vcftools --vcf {input.frgatk} 2>&1 | cut -d' ' -f9 | xargs > intr_2; echo -e "None\nNone" >> intr_2; vcftools --vcf {input.frgsmt} 2>&1 | cut -d' ' -f9 | xargs > intr_3; vcftools --vcf {input.gatksmt} 2>&1 | cut -d' ' -f9 | xargs >> intr_3; echo "None" >> intr_3; paste {output.rep} intr_2 intr_3; rm intr*"
+#
+#
+#rule intersect_vcf:
+#    input: free = "free/{id}.vcf.gz", gatk = "gatk/{id}.vcf.gz", smt = "smt/{id}.vcf.gz"
+#    output: frgatk = "output/{id}.freegatk.vcf", frsmt = "output/{id}.frsmt.vcf", gatksmt = "output/{id}.gatksmt.vcf" 
+#    shell: "vcf-isec -f -n +2 {input.free} {input.gatk} > {output.frgatk}; vcf-isec -f -n +2 {input.free} {input.smt} > {output.frsmt}; vcf-isec -f -n +2 {input.gatk} {input.smt} > {output.gatksmt}"
+#
+#
+#rule count_individual:
+#    input: "free/{id}.vcf.gz", "gatk/{id}.vcf.gz", "smt/{id}.vcf.gz"
+#    output: "output/{id}"
+#    shell: 'for i in {input}; do vcftools --gzvcf $i  2>&1 | cut -d' ' -f9 | xargs >> {output}; done'
+#
+#rule vcf_index:
+#    input: "free/{id}.vcf", "gatk/{id}.vcf", "smt/{id}.vcf"
+#    output: "free/{id}.vcf.gz", "gatk/{id}.vcf.gz", "smt/{id}.vcf.gz"
+#    shell: 'for i in {input}; do bgzip $i; s=$i+".gz"; tabix -p vcf $s; done'
+#
+#rule vc_haplotypecalle:
+#    input: ref = "data/22.fa", bam = "input/{id}.bam"
+#    output: "gatk/{id}.vcf"
+#    shell: "java -jar $GATK -R {input.ref} -T HaplotypeCaller -I {input.bam} -o {output}" 
+
+#rule vc_freebayes:
+#    input: "data/22.fa", "input/{id}.bam"
+#    output: "free/{id}.vcf"
+#    shell: "freebayes -f {input} > {output}"
+
+###############################################################
+
+IDS, = glob_wildcards("{id}.R1.fastq.gz")
+PathDtb = "/media/silly/Databases"
+
+rule all:
+    input: expand("reports/{id}_anno.hg19_multianno.txt", id=IDS) 
+
+rule annovar:
+    input: "reports/{id}_varscan.vcf"
+    output: "reports/{id}_anno.hg19_multianno.txt" 
+    log: "analysis/{id}/{id}.log"
+    shell: "(~/progs/annovar/table_annovar.pl {input} "+PathDtb+"/humandb/ -buildver hg19 -out reports/{wildcards.id}_anno -remove -protocol refGene,esp6500siv2_all,avsnp150,clinvar_20170501,revel,intervar_20170202,1000g2015aug_all,1000g2015aug_afr,1000g2015aug_eas,1000g2015aug_eur,gnomad_genome -operation g,f,f,f,f,f,f,f,f,f,f -nastring . -vcfinput; rm reports/{wildcards.id}_anno.avinput reports/{wildcards.id}_anno.hg19_multianno.vcf) 2>> {log}" 
+
+#если хотим получать фильтрованные vcf и их аннотировать - блокируем rule_all нижнее и изменяем верхние так, чтобы они были связаны через инпут_оутпут с нижним; если без аннотации - просто блокируем оба верхних правила и открываем оба нижние
+#ну и конечно - пути к рефернсам, базам данных, программам, образцам (написано для ./) - все должно быть естественно 
+
+#rule all:
+#    input: expand("reports/{id}_filtered_var.vcf", id=IDS) 
+#
+#rule filtering:
+#    input: "reports/{id}_varscan.vcf"
+#    output: "reports/{id}_filtered_var.vcf"
+##    shell: "~/progs/vcflib/bin/vcffilter -f "DP > 15 & MQ > 30 & QUAL > 40 "{input} > {output}"
+#    shell: "~/progs/vcflib/bin/vcffilter -g 'GQ > 50' {input} > {output}"
+
+rule vc_varscan:
+    input: PathDtb+"/Ref/GRCh37_by_hand.fna", "reports/{id}_Srt.bam"
+    output: protected("reports/{id}_varscan.vcf")
+    log: "analysis/{id}/{id}.log"
+    shell: "(~/progs/samtools-1.5/samtools mpileup -f {input} | java -jar ~/progs/VarScan.v2.3.9.jar mpileup2cns --output-vcf 1 --variants > {output}) 2>> {log}"
+
+rule sort_bam:
+    input: "analysis/{id}/{id}_Mrk.bam"
+    output: protected("reports/{id}_Srt.bam")
+    log: "analysis/{id}/{id}.log"
+    shell: "(java -jar ~/progs/picard/build/libs/picard.jar SortSam INPUT={input} OUTPUT={output} SORT_ORDER=coordinate CREATE_INDEX=TRUE) 2>> {log}"
+
+rule mark_duplicates:
+    input: "analysis/{id}/{id}_RG.bam"
+    output: temp("analysis/{id}/{id}_Mrk.bam"), "analysis/{id}/{id}_MrkDup_metrics.txt"
+    log: "analysis/{id}/{id}.log"
+    shell: "(java -jar ~/progs/picard/build/libs/picard.jar MarkDuplicates I={input} O={output[0]} M={output[1]} REMOVE_DUPLICATES=True) 2>> {log}"
+###rule index_bam:
+###    input: "input/{id}.bam"
+###    output: "input/{id}.bam.bai"
+###    shell: "samtools index {input}"
+#
+rule add_RG:
+    input: "analysis/{id}/{id}.bam", "reports/fast_qc/{id}.R1_fastqc.html"
+    output: protected("analysis/{id}/{id}_RG.bam")
+    log: "analysis/{id}/{id}.log"
+    shell: "(java -jar ~/progs/picard/build/libs/picard.jar AddOrReplaceReadGroups I={input[0]} O={output} SORT_ORDER=coordinate RGID=M02531.1 RGLB=TrueSight-1 RGPL=ILLUMINA RGPU=M0253122000000000-BGFH9.1 RGSM={wildcards.id} CREATE_INDEX=False) 2>> {log}"
+
+
+rule bwa_samtools:
+    input: Ref=PathDtb+"/Ref/GRCh37_by_hand.fna", R1="analysis/{id}/{id}.R1_paired.fastq.gz", R2="analysis/{id}/{id}.R2_paired.fastq.gz", fai=PathDtb+"/Ref/GRCh37_by_hand.fna.fai", dic=PathDtb+"/Ref/GRCh37_by_hand.dict"
+    output: temp("analysis/{id}/{id}.bam")
+    log: "analysis/{id}/{id}.log"
+    threads: 8
+    shell: "(~/progs/bwa-0.7.17/bwa mem -t {threads} {input.Ref} {input.R1} {input.R2} | ~/progs/samtools-1.5/samtools view -Sb > {output}) 2>> {log}"
+
+rule fastQC:
+    input: "analysis/{id}/{id}.R1_paired.fastq.gz", "analysis/{id}/{id}.R2_paired.fastq.gz", "{id}.R1.fastq.gz", "{id}.R2.fastq.gz"
+    output: "reports/fast_qc/{id}.R1_fastqc.html"
+    shell: "~/progs/FastQC/fastqc -o ./reports/fast_qc/ -f fastq {input}"
+
+rule trimmomatic_pe:
+    input: "{id}.R1.fastq.gz", "{id}.R2.fastq.gz"
+    output: "analysis/{id}/{id}.R1_paired.fastq.gz", "analysis/{id}/{id}.R1_unpaired.fastq.gz", "analysis/{id}/{id}.R2_paired.fastq.gz", "analysis/{id}/{id}.R2_unpaired.fastq.gz"
+    log: "analysis/{id}/{id}.log"
+    shell: "(java -jar ~/progs/Trimmomatic-0.38/trimmomatic-0.38.jar PE {input} {output} ILLUMINACLIP:/home/silly/progs/Trimmomatic-0.38/adapters/TruSeq3-PE-2.fa:2:30:10 LEADING:5 TRAILING:5 SLIDINGWINDOW:4:15 MINLEN:45) 2>> {log}"
+
+rule reference_dict:
+    input: PathDtb+"/Ref/GRCh37_by_hand.fna"
+    output: PathDtb+"/Ref/GRCh37_by_hand.dict"
+    shell: "java -jar ~/progs/picard/build/libs/picard.jar CreateSequenceDictionary R={input} O={output}"
+
+rule reference_index:
+    input: PathDtb+"/Ref/GRCh37_by_hand.fna"
+    output: PathDtb+"/Ref/GRCh37_by_hand.fna.fai"
+    shell: "~/progs/samtools-1.5/samtools faidx {input}"

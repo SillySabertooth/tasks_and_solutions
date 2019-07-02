@@ -1,0 +1,31 @@
+
+IDS, = glob_wildcards("{id}.R1.fastq.gz")
+PathDtb = "/media/silly/Databases"
+
+rule all:
+    input: expand("ready_{id}", id=IDS) 
+
+rule paste:
+    input: "count1_{id}", "count2_{id}", "count3_{id}", "paste_{id}"
+    output: "ready_{id}"
+    shell: 'echo -n "$(cat {input[0]})" >> {output[0]}; echo -n -e "\t$(cat {input[1]})" >> {output[0]}; echo -n -e "\t$(cat {input[2]})" >> {output[0]}; echo -n -e "\t$(cat {input[3]})" >> {output[0]}'
+
+rule count_intersected:
+    input: "count_inter/{id}.vcf", "count1_{id}"
+    output: "count3_{id}", "paste_{id}"
+    shell: "vcftools --vcf {input[0]} 2>&1 | cut -d \  -f9 | xargs | cut -d \  -f2 >> {output[0]}; echo '{wildcards.id}' >> {output[1]}"
+
+rule intersect_vcf:
+    input: "reports/{id}_varscan.vcf.gz", "reports_without_dupa/{id}_varscan.vcf.gz"
+    output: "count_inter/{id}.vcf" 
+    shell: "vcf-isec -f -n +2 {input} > {output}"
+#
+rule count_individual:
+    input: "reports/{id}_varscan.vcf.gz", "reports_without_dupa/{id}_varscan.vcf.gz"
+    output: "count1_{id}", "count2_{id}"
+    shell: 'vcftools --gzvcf {input[0]} 2>&1 | cut -d \  -f9 | xargs | cut -d \  -f2 >> {output[0]}; vcftools --gzvcf {input[1]} 2>&1 | cut -d \  -f9 | xargs | cut -d \  -f2 >> {output[1]}'
+
+rule vcf_index:
+    input: "reports/{id}_varscan.vcf", "reports_without_dupa/{id}_varscan.vcf"
+    output: "reports/{id}_varscan.vcf.gz", "reports_with_dupa/{id}_varscan.vcf.gz"
+    shell: 'for i in {input}; do bgzip $i; s=$i".gz"; tabix -p vcf $s; done'

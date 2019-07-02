@@ -1,0 +1,14 @@
+###############################################################
+
+IDS, = glob_wildcards("{id}_Rcl.bam")
+PathDtb = "/media/silly/Databases"
+
+rule all:
+    input: expand("{id}.g.vcf.gz", id=IDS) 
+
+rule Haplotypecaller_gatk_4:
+    input: PathDtb+"/Ref/GRCh37_by_hand.fna", "{id}_Rcl.bam"
+    output: "{id}.g.vcf.gz"
+    shell: "~/progs/gatk-4.1.1.0/gatk --java-options '-Xms8g -Xmx10g' HaplotypeCaller -R {input[0]} -I {input[1]} -O {output} -ERC GVCF"
+
+

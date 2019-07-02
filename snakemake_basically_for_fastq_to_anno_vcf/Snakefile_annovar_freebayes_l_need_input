@@ -1,0 +1,18 @@
+rule annot:
+    input:
+        "{sample}.vcf"
+    output:
+        "{sample}_annot"
+    shell:
+        "~/progs/annovar/table_annovar.pl {input} /media/silly/Databases/humandb/ -buildver hg19 -out {output} -remove -protocol refGene,esp6500siv2_all,avsnp150,clinvar_20170501,revel,intervar_20170202,1000g2015aug_all,1000g2015aug_afr,1000g2015aug_eas,1000g2015aug_eur,gnomad_genome -operation g,f,f,f,f,f,f,f,f,f,f -nastring . -vcfinput"
+
+rule free:
+    input:
+        "/media/silly/Databases/Ref/GRCh37_by_hand.fna",
+        "{sample}.bam"
+    output:
+        "{sample}.vcf"
+    shell:
+        "/home/silly/progs/freebayes/bin/freebayes -f {input} >{output}"
+
+#cause in the all cases there you should make an obvious input - u can commented lines that u don't need and thus make or vcf-files, or annotated vcf-files

@@ -1,0 +1,8 @@
+rule filtered:
+    input:
+        "{sample}.vcf"
+    output:
+        "{sample}_filtered.vcf"
+    shell:
+        "vcftools --vcf {input} --remove-filtered-all --recode --recode-INFO-all --out {output}"
+

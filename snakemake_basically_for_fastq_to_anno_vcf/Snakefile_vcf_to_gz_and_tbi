@@ -1,0 +1,10 @@
+IDS, = glob_wildcards("{id,\w+}.vcf")
+
+rule all:
+    input: expand("{id}.vcf.gz", id=IDS)
+
+rule:
+    input: vcf = "{id}.vcf" 
+    output: "{id}.vcf.gz"
+    shell: "bgzip {input.vcf}; tabix -p vcf {output}" 
+
