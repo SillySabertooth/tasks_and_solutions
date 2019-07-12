@@ -112,3 +112,4 @@ rule reference_index:
     input: PathDtb+"/Ref/GRCh37_by_hand.fna"
     output: PathDtb+"/Ref/GRCh37_by_hand.fna.fai"
     shell: "~/progs/samtools-1.5/samtools faidx {input}"
+

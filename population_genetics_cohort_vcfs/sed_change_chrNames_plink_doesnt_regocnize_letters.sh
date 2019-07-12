@@ -14,3 +14,4 @@ sed -i "s/chrX/23/" ./all_for_add.vcf
 sed -i "s/chrY/24/" ./all_for_add.vcf
 sed -i "s/chrM/25/" ./all_for_add.vcf
 sed -i "s/chrUn_gl000220/26/" ./all_for_add.vcf
+

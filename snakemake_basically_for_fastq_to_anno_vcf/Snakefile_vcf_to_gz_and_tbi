@@ -8,3 +8,4 @@ rule:
     output: "{id}.vcf.gz"
     shell: "bgzip {input.vcf}; tabix -p vcf {output}" 
 
+

@@ -12,3 +12,4 @@ rename "s/${i}_S[0-9]*_L001_R${R}_001.fastq.gz/${i}.R${R}.fastq.gz/" *
 done
 done
 
+

@@ -16,3 +16,4 @@ sed '/^>/ d' < chr_CDS_plus.fa > chr_CDS_plus_withoit_names.fa
 sed '/^>/ d' < chr_CDS_mins.fa > chr_CDS_mins_withoit_names.fa
 
 
+

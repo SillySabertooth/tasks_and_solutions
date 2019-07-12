@@ -19,3 +19,4 @@ cd ./beast_result
 
 java -Djava.library.path=/home/donat/lib -jar /home/donat/Vasya/beast/lib/beast.jar ../filtered_25_75.xml
 
+

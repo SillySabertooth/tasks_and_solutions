@@ -19,3 +19,4 @@ samtools mpileup -uf ref.fa aln.bam | bcftools call -mv -Oz -o calls.vcf.gz tabi
 
 
 https://github.com/samtools/samtools/issues/899
+

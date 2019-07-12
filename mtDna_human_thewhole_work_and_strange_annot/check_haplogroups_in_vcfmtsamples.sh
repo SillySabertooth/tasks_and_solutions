@@ -9,3 +9,4 @@ sed -i "s/"Sample1"/"${i}"/g" ${i}.txt
 sed -n '2p' ${i}.txt >> all.haplogroups_of_samples.txt 
 fi
 done
+

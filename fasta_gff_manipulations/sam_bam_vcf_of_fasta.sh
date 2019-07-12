@@ -27,3 +27,4 @@ done
 #cd Results/
 
 #~/progs/samtools-1.5/samtools mpileup -uvf ../chloroplast_Saski.fasta *.s.bam | ~/progs/bcftools-1.5/bcftools call -cv -> all_samples.vcf
+

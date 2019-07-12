@@ -7,3 +7,4 @@ len=$len"-L chr$i "
 done
 len=$len"-L chrX -L chrY -L chrMT \\"
 echo $len
+

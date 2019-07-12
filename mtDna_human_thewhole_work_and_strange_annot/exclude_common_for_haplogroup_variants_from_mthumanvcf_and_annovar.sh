@@ -34,3 +34,4 @@ tabix -p vcf ${i}_MT_4.2.vcf.gz
 /home/silly/progs/annovar/table_annovar.pl ${i}.not_anno_indiv.vcf /media/silly/Databases/humandb/ -buildver hg19 -out ${i}_individual -remove -protocol avsnp150,clinvar_20170501,mitimpact24 -operation f,f,f -nastring . -vcfinput
 fi
 done
+

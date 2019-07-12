@@ -18,3 +18,4 @@ do
 java -Xms2000m -Xmx6000m -jar ~/Vasya/ibdseq.r1206.jar gt=../chr${i}.vcf nthreads=3 ibdlod=3.0 out=chr${i}
 done
 
+

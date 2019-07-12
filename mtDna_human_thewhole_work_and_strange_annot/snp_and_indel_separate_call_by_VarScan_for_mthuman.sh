@@ -18,3 +18,4 @@ $Path_to_pr/samtools-1.5/samtools mpileup -f /$Ref ${i}.m.sort.bam | java -jar $
 fi
 done
       
+

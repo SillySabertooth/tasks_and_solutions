@@ -13,3 +13,5 @@ java -jar SnpSift.jar filter  "((ANN[*].EFFECT has 'missense_variant') | (ANN[*]
 
 java -jar SnpSift.jar filter  "ANN[*].EFFECT has 'nonsense_variant'" ./FASTQ/Ber.ann.vcf > ./FASTQ/Ber.ann.filter_missense_first.vcf
 
+
+

@@ -20,3 +20,4 @@ sed '/^>/ d' < ${name}_plus_whole_with_names.fasta > ${name}_plus_whole.fasta
 sed '/^>/ d' < ${name}_mins_whole_with_names.fasta > ${name}_mins_whole.fasta
 
 
+

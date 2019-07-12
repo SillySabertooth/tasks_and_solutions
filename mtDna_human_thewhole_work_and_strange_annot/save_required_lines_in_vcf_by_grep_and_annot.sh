@@ -10,3 +10,4 @@ $Path_to_pr/annovar/table_annovar.pl ${i}_clean.vcf /media/donat/Databases/human
 fi
 done
 
+

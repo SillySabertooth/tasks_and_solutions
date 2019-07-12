@@ -18,3 +18,4 @@ done
 
 cd ..
 cat *.txt >> all_features.txt
+

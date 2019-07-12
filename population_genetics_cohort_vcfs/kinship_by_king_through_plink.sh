@@ -24,3 +24,4 @@ tabix -p vcf ${name}.vcf.gz
 ~/progs/king -b ${name}.bed --kinship --prefix ${final}
 ###~/progs/king -b ${name}.bed --homog --prefix ${final}
 
+

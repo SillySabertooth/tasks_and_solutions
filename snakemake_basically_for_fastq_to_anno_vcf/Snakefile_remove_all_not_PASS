@@ -6,3 +6,4 @@ rule filtered:
     shell:
         "vcftools --vcf {input} --remove-filtered-all --recode --recode-INFO-all --out {output}"
 
+

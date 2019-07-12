@@ -29,3 +29,4 @@ echo $string
 #foo
 #$ echo ${s%.*}
 #foo
+

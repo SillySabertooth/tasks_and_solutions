@@ -23,3 +23,4 @@ gunzip -k ${i}_last.vcf.gz
 
 fi
 done
+

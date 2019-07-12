@@ -51,3 +51,4 @@ tabix -p vcf ${i}_dis_snp.hg19_multianno.vcf.gz
 fi
 done
 
+

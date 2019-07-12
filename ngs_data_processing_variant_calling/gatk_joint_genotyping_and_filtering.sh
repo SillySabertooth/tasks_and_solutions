@@ -79,3 +79,4 @@ $Progs/gatk-4.1.1.0/gatk --java-options "-Xmx8g -Xms6g" ApplyVQSR \
     --tranches-file ${Name}_indel.tranches \
     --recal-file ${Name}_indel.recal \
     -mode INDEL
+

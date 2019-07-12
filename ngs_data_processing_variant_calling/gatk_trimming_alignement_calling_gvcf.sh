@@ -134,3 +134,4 @@ $Progs/gatk-4.1.1.0/gatk --java-options "-Xms8g -Xmx10g" HaplotypeCaller \
 fi
 done
 
+

@@ -29,3 +29,4 @@ rule vcf_index:
     input: "reports/{id}_varscan.vcf", "reports_without_dupa/{id}_varscan.vcf"
     output: "reports/{id}_varscan.vcf.gz", "reports_with_dupa/{id}_varscan.vcf.gz"
     shell: 'for i in {input}; do bgzip $i; s=$i".gz"; tabix -p vcf $s; done'
+

@@ -13,3 +13,4 @@ do
 grep -w "^#*\|^#CHROM\|^chr${i}" ../all_by_excel_from_72_samples.vcf > chr${i}.vcf
 done
 
+

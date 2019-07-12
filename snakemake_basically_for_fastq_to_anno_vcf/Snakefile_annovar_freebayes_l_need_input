@@ -16,3 +16,4 @@ rule free:
         "/home/silly/progs/freebayes/bin/freebayes -f {input} >{output}"
 
 #cause in the all cases there you should make an obvious input - u can commented lines that u don't need and thus make or vcf-files, or annotated vcf-files
+
