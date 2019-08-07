@@ -58,7 +58,7 @@ java -jar $Progs/picard/build/libs/picard.jar AddOrReplaceReadGroups \
 ###если у вас есть сырые uBam - стоит использовать их вместо более грубого верхнего варианта
 #java -jar $Progs/picard/build/libs/picard.jar MergeBamAlignment \
 #  ALIGNED=${i}.bam \
-#  UNMAPPED=unmapped.bam \
+#  UNMAPPED=${i}.unmapped.bam \
 #  O=${i}_RGr.bam \
 #  R=$Db/Ref/GRCh37_by_hand.fna
 
