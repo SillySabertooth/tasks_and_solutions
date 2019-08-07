@@ -1,0 +1,107 @@
+
+IDS, = glob_wildcards("{id}.R1.fastq.gz")
+PathDtb = "/media/silly/Databases"
+
+rule all:
+    input: expand("reports/{id}.g.vcf.gz", id=IDS) 
+
+rule HaplotypeCaller:
+    input: PathDtb+"/Ref/GRCh37_by_hand.fna", "reports/{id}_Rcl.bam", "analysis/{id}/{id}_AnlCov_small.pdf"
+    output: protected("reports/{id}.g.vcf.gz")
+    log: "analysis/{id}/{id}.log"
+    shell: "(~/progs/gatk-4.1.1.0/gatk --java-options '-Xms8g -Xmx10g' HaplotypeCaller -R {input[0]} -I {input[1]} -O {output} -ERC GVCF) 2>> {log}"
+
+#Флаг Xmx указывает максимальный пул распределения памяти для виртуальной машины Java (JVM), а Xms указывает начальный пул распределения памяти. Это означает, что ваш JVM будет запущен с объемом памяти Xms и сможет использовать максимум Xmx объема памяти. Например, запуск JVM, как показано ниже, запуститего с 256 МБ памяти и позволит процессу использовать до 2048 МБ памяти: java -Xms256m -Xmx2048m
+
+###there are drawing plots below
+
+rule plots_two:
+    input: "analysis/{id}/{id}_Rcl.table", "analysis/{id}/{id}_AnlCov.pdf"
+    output: "analysis/{id}/{id}_AnlCov_small.pdf"
+    log: "analysis/{id}/{id}.log"
+    shell: "(~/progs/gatk-4.1.1.0/gatk AnalyzeCovariates -bqsr {input[0]} -plots {output}) 2>> {log}"
+
+
+rule plots_one:
+    input: "analysis/{id}/{id}_Rcl.table", "analysis/{id}/{id}_Rcl2.table"
+    output: "analysis/{id}/{id}_AnlCov.pdf"
+    log: "analysis/{id}/{id}.log"
+    shell: "(~/progs/gatk-4.1.1.0/gatk AnalyzeCovariates -before {input[0]} -after {input[1]} -plots {output}) 2>> {log}"
+
+rule BQSR_2:
+    input: PathDtb+"/Ref/GRCh37_by_hand.fna", "reports/{id}_Rcl.bam", PathDtb+"/gatk_db/dbsnp_138.hg19.vcf", PathDtb+"/gatk_db/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf", PathDtb+"/gatk_db/1000G_phase1.indels.hg19.sites.vcf"
+    output: "analysis/{id}/{id}_Rcl2.table"
+    log: "analysis/{id}/{id}.log"
+    shell: "(~/progs/gatk-4.1.1.0/gatk BaseRecalibrator -I {input[1]} -R {input[0]) --known-sites {input[2]} --known-sites {input[3]} --known-sites {input[4]} -O {output}) 2>> {log}"
+
+
+###some commands for drawing plots above
+
+rule ApplyBQSR:
+    input: PathDtb+"/Ref/GRCh37_by_hand.fna", "reports/{id}_Srt.bam", "analysis/{id}/{id}_Rcl.table"
+    output: protected("reports/{id}_Rcl.bam")
+    log: "analysis/{id}/{id}.log"
+    shell: "(~/progs/gatk-4.1.1.0/gatk ApplyBQSR -R {input[0]} -I {input[1]} --bqsr-recal-file {input[2]} -O {output}) 2>> {log}"
+
+rule BQSR:
+    input: PathDtb+"/Ref/GRCh37_by_hand.fna", "reports/{id}_Srt.bam", PathDtb+"/gatk_db/dbsnp_138.hg19.vcf", PathDtb+"/gatk_db/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf", PathDtb+"/gatk_db/1000G_phase1.indels.hg19.sites.vcf"
+    output: "analysis/{id}/{id}_Rcl.table"
+    log: "analysis/{id}/{id}.log"
+    shell: "(~/progs/gatk-4.1.1.0/gatk BaseRecalibrator -I {input[1]} -R {input[0]) --known-sites {input[2]} --known-sites {input[3]} --known-sites {input[4]} -O {output}) 2>> {log}"
+
+
+###############below simple pre-processing; above BQSR, plots and calling for gatk
+
+rule sort_bam:
+    input: "analysis/{id}/{id}_Mrk.bam"
+    output: protected("reports/{id}_Srt.bam")
+    log: "analysis/{id}/{id}.log"
+    shell: "(java -jar ~/progs/picard/build/libs/picard.jar SortSam INPUT={input} OUTPUT={output} SORT_ORDER=coordinate CREATE_INDEX=TRUE) 2>> {log}"
+
+rule mark_duplicates:
+    input: "analysis/{id}/{id}_RG.bam"
+    output: temp("analysis/{id}/{id}_Mrk.bam"), "analysis/{id}/{id}_MrkDup_metrics.txt"
+    log: "analysis/{id}/{id}.log"
+    shell: "(java -jar ~/progs/picard/build/libs/picard.jar MarkDuplicates I={input} O={output[0]} M={output[1]}) 2>> {log}"
+
+##если у вас есть сырые uBam - стоит использовать их вместо более грубого нижнего варианта
+#rule add_RG_through_merge:
+#    input: "analysis/{id}/{id}.bam", "{id}.unmapped.bam", "reports/fast_qc/{id}.R1_fastqc.html"
+#    output: protected("analysis/{id}/{id}_RG.bam")
+#    log: "analysis/{id}/{id}.log"
+#    shell: "(java -jar ~/progs/picard/build/libs/picard.jar MergeBamAlignment ALIGNED={input[0]} UNMAPPED={input[1]} O={output} R=Ref/GRCh37_by_hand.fna)"
+
+rule add_RG:
+    input: "analysis/{id}/{id}.bam", "reports/fast_qc/{id}.R1_fastqc.html"
+    output: protected("analysis/{id}/{id}_RG.bam")
+    log: "analysis/{id}/{id}.log"
+    shell: "(java -jar ~/progs/picard/build/libs/picard.jar AddOrReplaceReadGroups I={input[0]} O={output} SORT_ORDER=coordinate RGID=M02531.1 RGLB=TrueSight-1 RGPL=ILLUMINA RGPU=M0253122000000000-BGFH9.1 RGSM={wildcards.id} CREATE_INDEX=True) 2>> {log}"
+
+rule bwa_samtools:
+    input: Ref=PathDtb+"/Ref/GRCh37_by_hand.fna", R1="analysis/{id}/{id}.R1_paired.fastq.gz", R2="analysis/{id}/{id}.R2_paired.fastq.gz", fai=PathDtb+"/Ref/GRCh37_by_hand.fna.fai", dic=PathDtb+"/Ref/GRCh37_by_hand.dict"
+    output: temp("analysis/{id}/{id}.bam")
+    log: "analysis/{id}/{id}.log"
+    threads: 8
+    shell: "(~/progs/bwa-0.7.17/bwa mem -t {threads} {input.Ref} {input.R1} {input.R2} | ~/progs/samtools-1.5/samtools view -Sb > {output}) 2>> {log}"
+
+rule fastQC:
+    input: "analysis/{id}/{id}.R1_paired.fastq.gz", "analysis/{id}/{id}.R2_paired.fastq.gz", "{id}.R1.fastq.gz", "{id}.R2.fastq.gz"
+    output: "reports/fast_qc/{id}.R1_fastqc.html"
+    shell: "~/progs/FastQC/fastqc -o ./reports/fast_qc/ -f fastq {input}"
+
+rule trimmomatic_pe:
+    input: "{id}.R1.fastq.gz", "{id}.R2.fastq.gz"
+    output: "analysis/{id}/{id}.R1_paired.fastq.gz", "analysis/{id}/{id}.R1_unpaired.fastq.gz", "analysis/{id}/{id}.R2_paired.fastq.gz", "analysis/{id}/{id}.R2_unpaired.fastq.gz"
+    log: "analysis/{id}/{id}.log"
+    shell: "(java -jar ~/progs/Trimmomatic-0.38/trimmomatic-0.38.jar PE {input} {output} ILLUMINACLIP:/home/silly/progs/Trimmomatic-0.38/adapters/TruSeq3-PE-2.fa:2:30:10 LEADING:5 TRAILING:5 SLIDINGWINDOW:4:15 MINLEN:45) 2>> {log}"
+
+rule reference_dict:
+    input: PathDtb+"/Ref/GRCh37_by_hand.fna"
+    output: PathDtb+"/Ref/GRCh37_by_hand.dict"
+    shell: "java -jar ~/progs/picard/build/libs/picard.jar CreateSequenceDictionary R={input} O={output}"
+
+rule reference_index:
+    input: PathDtb+"/Ref/GRCh37_by_hand.fna"
+    output: PathDtb+"/Ref/GRCh37_by_hand.fna.fai"
+    shell: "~/progs/samtools-1.5/samtools faidx {input}"
+
