@@ -32,7 +32,7 @@ rule BQSR_2:
     input: PathDtb+"/Ref/GRCh37_by_hand.fna", "reports/{id}_Rcl.bam", PathDtb+"/gatk_db/dbsnp_138.hg19.vcf", PathDtb+"/gatk_db/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf", PathDtb+"/gatk_db/1000G_phase1.indels.hg19.sites.vcf"
     output: "analysis/{id}/{id}_Rcl2.table"
     log: "analysis/{id}/{id}.log"
-    shell: "(~/progs/gatk-4.1.1.0/gatk BaseRecalibrator -I {input[1]} -R {input[0]) --known-sites {input[2]} --known-sites {input[3]} --known-sites {input[4]} -O {output}) 2>> {log}"
+    shell: "(~/progs/gatk-4.1.1.0/gatk BaseRecalibrator -I {input[1]} -R {input[0]} --known-sites {input[2]} --known-sites {input[3]} --known-sites {input[4]} -O {output}) 2>> {log}"
 
 
 ###some commands for drawing plots above
@@ -47,7 +47,7 @@ rule BQSR:
     input: PathDtb+"/Ref/GRCh37_by_hand.fna", "reports/{id}_Srt.bam", PathDtb+"/gatk_db/dbsnp_138.hg19.vcf", PathDtb+"/gatk_db/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf", PathDtb+"/gatk_db/1000G_phase1.indels.hg19.sites.vcf"
     output: "analysis/{id}/{id}_Rcl.table"
     log: "analysis/{id}/{id}.log"
-    shell: "(~/progs/gatk-4.1.1.0/gatk BaseRecalibrator -I {input[1]} -R {input[0]) --known-sites {input[2]} --known-sites {input[3]} --known-sites {input[4]} -O {output}) 2>> {log}"
+    shell: "(~/progs/gatk-4.1.1.0/gatk BaseRecalibrator -I {input[1]} -R {input[0]} --known-sites {input[2]} --known-sites {input[3]} --known-sites {input[4]} -O {output}) 2>> {log}"
 
 
 ###############below simple pre-processing; above BQSR, plots and calling for gatk
