@@ -78,7 +78,7 @@ rule add_RG:
     shell: "(java -jar ~/progs/picard/build/libs/picard.jar AddOrReplaceReadGroups I={input[0]} O={output} SORT_ORDER=coordinate RGID=M02531.1 RGLB=TrueSight-1 RGPL=ILLUMINA RGPU=M0253122000000000-BGFH9.1 RGSM={wildcards.id} CREATE_INDEX=True) 2>> {log}"
 
 rule bwa_samtools_only:
-    input: Ref=PathDtb+"/Ref/GRCh37_by_hand.fna", R1="analysis/{id}/{id}.R1_paired.fastq.gz", R2="analysis/{id}/{id}.R2_paired.fastq.gz", fai=PathDtb+"/Ref/GRCh37_by_hand.fna.fai", dic=PathDtb+"/Ref/GRCh37_by_hand.dict"
+    input: Ref=PathDtb+"/Ref/GRCh37_by_hand.fna", R1="{id}.R1.fastq.gz", R2="{id}.fastq.gz", fai=PathDtb+"/Ref/GRCh37_by_hand.fna.fai", dic=PathDtb+"/Ref/GRCh37_by_hand.dict"
     output: temp("analysis/{id}/{id}.bam")
     log: "analysis/{id}/{id}.log"
     threads: 2
@@ -86,7 +86,7 @@ rule bwa_samtools_only:
 
 ##logika leshi - u need to use ALL. so, i banned trimmomatic in that case amd only use a bwa
 #rule bwa_samtools:
-#    input: Ref=PathDtb+"/Ref/GRCh37_by_hand.fna", R1="{id}.R1.fastq.gz", R2="{id}.fastq.gz", fai=PathDtb+"/Ref/GRCh37_by_hand.fna.fai", dic=PathDtb+"/Ref/GRCh37_by_hand.dict"
+#    input: Ref=PathDtb+"/Ref/GRCh37_by_hand.fna", R1="analysis/{id}/{id}.R1_paired.fastq.gz", R2="analysis/{id}/{id}.R2_paired.fastq.gz", fai=PathDtb+"/Ref/GRCh37_by_hand.fna.fai", dic=PathDtb+"/Ref/GRCh37_by_hand.dict"
 #    output: temp("analysis/{id}/{id}.bam")
 #    log: "analysis/{id}/{id}.log"
 #    threads: 8
