@@ -82,7 +82,7 @@ rule add_RG:
     input: "analysis/{id}/{id}.bam", "reports/fast_qc/{id}.R1_fastqc.html"
     output: protected("analysis/{id}/{id}_RG.bam")
     log: "analysis/{id}/{id}.log"
-    shell: "(java -jar ~/progs/picard/build/libs/picard.jar AddOrReplaceReadGroups I={input[0]} O={output} SORT_ORDER=coordinate RGID=M02531.1 RGLB=TrueSight-1 RGPL=ILLUMINA RGPU=M0253122000000000-BGFH9.1 RGSM={wildcards.id} CREATE_INDEX=False) 2>> {log}"
+    shell: "(java -jar ~/progs/picard/build/libs/picard.jar AddOrReplaceReadGroups I={input[0]} O={output} SORT_ORDER=coordinate RGID=NB551549 RGLB=Nextera_CD_DNA RGPL=ILLUMINA RGPU=NB551549000000000-H5VHFBGXB RGSM={wildcards.id} CREATE_INDEX=False) 2>> {log}"
 
 
 rule bwa_samtools:
